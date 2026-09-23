@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
+const dns = require('dns');
+
+// Configure reliable DNS servers for Windows SRV record resolution
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (e) {
+  // Ignore if not supported in environment
+}
 
 const connectDB = async () => {
+
   try {
     const connStr = process.env.MONGODB_URI || 'mongodb://localhost:27017/salon_management';
     await mongoose.connect(connStr);

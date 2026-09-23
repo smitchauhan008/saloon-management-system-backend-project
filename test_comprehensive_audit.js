@@ -1,6 +1,12 @@
 const http = require('http');
 const mongoose = require('mongoose');
+const dns = require('dns');
 require('dotenv').config();
+
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (e) {}
+
 
 const BASE_URL = 'http://localhost:3000';
 
