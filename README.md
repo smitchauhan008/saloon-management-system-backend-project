@@ -3,7 +3,7 @@
 > **Institution**: Darshan University — Faculty of Engineering & Technology  
 > **Program**: B.Tech.(CSE) / B.Sc.(H) Semester - 5  
 > **Course**: Backend Web Technology (2501CS402)  
-> **Evaluation Phase**: Phase – 3 Final Evaluation (100 Marks)
+> **Evaluation Phase**: Final Evaluation (100 Marks)
 
 ---
 
