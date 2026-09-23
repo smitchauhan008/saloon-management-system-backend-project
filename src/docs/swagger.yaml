@@ -1,0 +1,857 @@
+openapi: 3.0.3
+info:
+  title: Salon Management System Enterprise API
+  description: >
+    Production-grade RESTful API specification for the Salon Management System,
+    developed in accordance with Darshan University B.Tech Sem-5 Backend Web Technology (2501CS402) SRS.
+    Includes comprehensive RBAC authorization policies, algorithmic scheduling controls, automated payroll calculations,
+    and enterprise dashboard analytical pipelines.
+  version: 1.0.0
+  contact:
+    name: Backend Engineering Team
+    email: admin@salon.com
+servers:
+  - url: http://localhost:3000
+    description: Local Development & Staging Server
+
+tags:
+  - name: Health
+    description: System heartbeat and diagnostic endpoints
+  - name: Authentication Engine (Module 5.1)
+    description: Identity verification, JWT generation, session invalidation, and password updates
+  - name: Customer Management (Module 5.2)
+    description: Client directory profiling, search-filtering, and visit logs
+  - name: Service Catalog (Module 5.3)
+    description: Treatment menu items, duration, and pricing configuration
+  - name: Barber Profiles (Module 5.4)
+    description: Styling staff roster, commission targets, and specialization tags
+  - name: Appointment Lifecycles (Module 5.5)
+    description: Booking workflows, status state machines, and relational assignment
+  - name: Advanced Time Slot Scheduling (Module 5.6)
+    description: Algorithmic collision detection, shift windows, and exception validation
+  - name: Employee Attendance Trackers (Module 5.7)
+    description: Timecard check-in, check-out, and active shift duration tracking
+  - name: Automated Payroll & Commissions (Module 5.8)
+    description: Variable commission tiers, ledger updates, and monthly balance settlements
+  - name: Corporate Dashboard Reporting (Module 5.9)
+    description: High-performance mathematical queries and multi-table business intelligence aggregations
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: System diagnostic health check
+      description: Returns real-time application uptime, environment mode, memory consumption, and active database connection state.
+      responses:
+        200:
+          description: System operational status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/auth/login:
+    post:
+      tags: [Authentication Engine (Module 5.1)]
+      summary: User authentication
+      description: Authenticates staff identity credentials and issues a cryptographically signed JWT bearer token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@salon.com
+                password:
+                  type: string
+                  format: password
+                  example: adminpassword123
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        401:
+          description: Invalid email or password
+
+  /api/auth/logout:
+    post:
+      tags: [Authentication Engine (Module 5.1)]
+      summary: User session invalidation
+      security:
+        - bearerAuth: []
+      description: Invalidates active authorization token and clears stateless session reference.
+      responses:
+        200:
+          description: Logout successful
+
+  /api/auth/change-password:
+    put:
+      tags: [Authentication Engine (Module 5.1)]
+      summary: Update staff credential password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  type: string
+                  example: oldpassword123
+                newPassword:
+                  type: string
+                  minLength: 6
+                  example: newsecurepass456
+      responses:
+        200:
+          description: Password updated successfully
+        400:
+          description: Invalid current password or weak password
+
+  /api/users/staff:
+    post:
+      tags: [Authentication Engine (Module 5.1)]
+      summary: Register internal staff member (Administrator only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, role]
+              properties:
+                name:
+                  type: string
+                  example: John Receptionist
+                email:
+                  type: string
+                  format: email
+                  example: reception@salon.com
+                password:
+                  type: string
+                  example: secret123
+                role:
+                  type: string
+                  enum: [Administrator, Receptionist, Barber]
+                  example: Receptionist
+      responses:
+        201:
+          description: Staff account created
+        403:
+          description: Forbidden (Administrator only)
+
+  /api/customers:
+    get:
+      tags: [Customer Management (Module 5.2)]
+      summary: List and search customers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          description: Search filter by customer name or phone
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Pagination page number
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of records per page
+          schema:
+            type: integer
+            default: 10
+      responses:
+        200:
+          description: Paginated customer records
+    post:
+      tags: [Customer Management (Module 5.2)]
+      summary: Create new customer profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerInput'
+      responses:
+        201:
+          description: Customer record created
+
+  /api/customers/{id}:
+    get:
+      tags: [Customer Management (Module 5.2)]
+      summary: Get customer profile with historical visit logs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Customer profile with appointment history
+        404:
+          description: Customer not found
+    put:
+      tags: [Customer Management (Module 5.2)]
+      summary: Update customer profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerInput'
+      responses:
+        200:
+          description: Customer profile updated
+    delete:
+      tags: [Customer Management (Module 5.2)]
+      summary: Delete customer profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Customer profile removed
+
+  /api/services:
+    get:
+      tags: [Service Catalog (Module 5.3)]
+      summary: Fetch treatment service catalog
+      responses:
+        200:
+          description: Complete service menu catalog
+    post:
+      tags: [Service Catalog (Module 5.3)]
+      summary: Add new treatment package (Administrator only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceInput'
+      responses:
+        201:
+          description: Service created
+
+  /api/services/{id}:
+    put:
+      tags: [Service Catalog (Module 5.3)]
+      summary: Update pricing or duration (Administrator only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceInput'
+      responses:
+        200:
+          description: Service updated
+    delete:
+      tags: [Service Catalog (Module 5.3)]
+      summary: Remove service from menu (Administrator only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Service deleted
+
+  /api/barbers:
+    get:
+      tags: [Barber Profiles (Module 5.4)]
+      summary: List barbers and stylists
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Roster of styling personnel
+    post:
+      tags: [Barber Profiles (Module 5.4)]
+      summary: Add newly hired stylist profile (Administrator only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BarberInput'
+      responses:
+        201:
+          description: Barber profile initialized
+
+  /api/barbers/{id}:
+    put:
+      tags: [Barber Profiles (Module 5.4)]
+      summary: Update stylist commission or specialization (Administrator only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                specialization:
+                  type: string
+                commission_percentage:
+                  type: number
+      responses:
+        200:
+          description: Barber updated
+    delete:
+      tags: [Barber Profiles (Module 5.4)]
+      summary: Deactivate or remove barber profile (Administrator only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Barber deactivated
+
+  /api/appointments:
+    get:
+      tags: [Appointment Lifecycles (Module 5.5)]
+      summary: Query multi-criteria appointment scheduling lists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+            example: 2026-09-23
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [Pending, Confirmed, In Progress, Completed, Cancelled]
+        - name: barber_id
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of appointment entries
+    post:
+      tags: [Appointment Lifecycles (Module 5.5)]
+      summary: Schedule a new reservation entry
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentInput'
+      responses:
+        201:
+          description: Appointment successfully created
+        409:
+          description: Scheduling conflict or double-booking detected
+
+  /api/appointments/{id}:
+    get:
+      tags: [Appointment Lifecycles (Module 5.5)]
+      summary: Inspect lifecycle details of an individual appointment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Detailed appointment record
+    put:
+      tags: [Appointment Lifecycles (Module 5.5)]
+      summary: Update status across operational pipelines (Pending -> Confirmed -> In Progress -> Completed/Cancelled)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [Pending, Confirmed, In Progress, Completed, Cancelled]
+                remarks:
+                  type: string
+      responses:
+        200:
+          description: Appointment status updated
+    delete:
+      tags: [Appointment Lifecycles (Module 5.5)]
+      summary: Remove appointment record
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Appointment record erased
+
+  /api/slots:
+    get:
+      tags: [Advanced Time Slot Scheduling (Module 5.6)]
+      summary: Compute open time windows for a barber
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: barber_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+            example: 2026-09-23
+      responses:
+        200:
+          description: Available time slot windows
+    post:
+      tags: [Advanced Time Slot Scheduling (Module 5.6)]
+      summary: Register calendar exceptions or block operational windows
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SlotBlockInput'
+      responses:
+        201:
+          description: Calendar exception registered
+
+  /api/attendance:
+    get:
+      tags: [Employee Attendance Trackers (Module 5.7)]
+      summary: Matrix review tracking historical check-in actions across staff (Administrator only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: barber_id
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Attendance timecard log entries
+
+  /api/attendance/checkin:
+    post:
+      tags: [Employee Attendance Trackers (Module 5.7)]
+      summary: Register clock-in punch timestamp to open daily attendance card
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [barber_id]
+              properties:
+                barber_id:
+                  type: string
+      responses:
+        201:
+          description: Check-in recorded successfully
+        400:
+          description: Already checked in for current date
+
+  /api/attendance/checkout:
+    post:
+      tags: [Employee Attendance Trackers (Module 5.7)]
+      summary: Close active time card tracking window for the current date
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [barber_id]
+              properties:
+                barber_id:
+                  type: string
+      responses:
+        200:
+          description: Check-out recorded and shift duration closed
+        400:
+          description: No active check-in found or already checked out
+
+  /api/wages:
+    get:
+      tags: [Automated Payroll & Commissions (Module 5.8)]
+      summary: Calculate payroll variables and summarized statements
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: barber_id
+          in: query
+          schema:
+            type: string
+        - name: month
+          in: query
+          schema:
+            type: string
+            example: 2026-09
+      responses:
+        200:
+          description: Summarized wage and commission statement
+    post:
+      tags: [Automated Payroll & Commissions (Module 5.8)]
+      summary: Finalize monthly balance tables and log financial payout distributions (Administrator only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [barber_id, month, base_salary]
+              properties:
+                barber_id:
+                  type: string
+                month:
+                  type: string
+                  example: 2026-09
+                base_salary:
+                  type: number
+                  example: 15000
+      responses:
+        201:
+          description: Payroll settlement locked and finalized
+        409:
+          description: Payroll for this month already finalized
+
+  /api/reports/daily-revenue:
+    get:
+      tags: [Corporate Dashboard Reporting (Module 5.9)]
+      summary: Summarized operational income metrics for a business date (Administrator only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+            example: 2026-09-23
+      responses:
+        200:
+          description: Daily revenue, commission vs retained split, and hourly distribution (09:00 - 19:00)
+        403:
+          description: Forbidden (Administrator only)
+
+  /api/reports/monthly-revenue:
+    get:
+      tags: [Corporate Dashboard Reporting (Module 5.9)]
+      summary: Income performance distributions across active fiscal terms (Administrator only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+            example: 2026
+      responses:
+        200:
+          description: 12-month calendar fiscal revenue breakdown
+        403:
+          description: Forbidden (Administrator only)
+
+  /api/reports/top-services:
+    get:
+      tags: [Corporate Dashboard Reporting (Module 5.9)]
+      summary: Rank-order menu options by purchase volume and revenue contribution (Administrator only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 5
+      responses:
+        200:
+          description: Top selling services ranked with relative sales shares
+        403:
+          description: Forbidden (Administrator only)
+
+  /api/reports/barber-performance:
+    get:
+      tags: [Corporate Dashboard Reporting (Module 5.9)]
+      summary: Stylist appointment metrics, sales, commissions, shift hours, and hourly rate (Administrator only)
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Stylist performance matrix
+        403:
+          description: Forbidden (Administrator only)
+
+  /api/reports/customer-visits:
+    get:
+      tags: [Corporate Dashboard Reporting (Module 5.9)]
+      summary: Client retention rate percentage and VIP loyalty leaderboard (Administrator only)
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Customer retention metrics and top repeat clients
+        403:
+          description: Forbidden (Administrator only)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        timestamp:
+          type: string
+          format: date-time
+        uptime_seconds:
+          type: number
+          example: 124.5
+        environment:
+          type: string
+          example: development
+        database:
+          type: object
+          properties:
+            status:
+              type: string
+              example: connected
+            name:
+              type: string
+              example: salon_management
+        memory_usage:
+          type: object
+          properties:
+            rss_mb:
+              type: string
+              example: 45.20 MB
+            heap_used_mb:
+              type: string
+              example: 28.10 MB
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                  example: Salon Administrator
+                email:
+                  type: string
+                  example: admin@salon.com
+                role:
+                  type: string
+                  example: Administrator
+
+    CustomerInput:
+      type: object
+      required: [name, phone]
+      properties:
+        name:
+          type: string
+          example: Rahul Sharma
+        phone:
+          type: string
+          example: 9876543210
+        email:
+          type: string
+          format: email
+          example: rahul@example.com
+        gender:
+          type: string
+          enum: [Male, Female, Other]
+          example: Male
+
+    ServiceInput:
+      type: object
+      required: [service_name, duration, price]
+      properties:
+        service_name:
+          type: string
+          example: Premium Haircut & Wash
+        duration:
+          type: integer
+          description: Duration in minutes
+          example: 45
+        price:
+          type: number
+          example: 350.00
+        description:
+          type: string
+          example: Haircut with organic shampoo wash and styling
+
+    BarberInput:
+      type: object
+      required: [user_id, commission_percentage, joining_date]
+      properties:
+        user_id:
+          type: string
+          description: ObjectId of associated User
+        specialization:
+          type: string
+          example: Master Stylist & Beard Artist
+        commission_percentage:
+          type: number
+          example: 40.00
+        joining_date:
+          type: string
+          format: date
+          example: 2026-08-01
+
+    AppointmentInput:
+      type: object
+      required: [customer_id, barber_id, service_id, appointment_date]
+      properties:
+        customer_id:
+          type: string
+        barber_id:
+          type: string
+        service_id:
+          type: string
+        appointment_date:
+          type: string
+          format: date-time
+          example: 2026-09-23T10:00:00.000Z
+        remarks:
+          type: string
+          example: Client requested VIP stylist
+
+    SlotBlockInput:
+      type: object
+      required: [title, start_date, end_date]
+      properties:
+        title:
+          type: string
+          example: Diwali Salon Holiday
+        start_date:
+          type: string
+          format: date
+          example: 2026-11-01
+        end_date:
+          type: string
+          format: date
+          example: 2026-11-03
+        reason:
+          type: string
+          example: Official Business Holiday
