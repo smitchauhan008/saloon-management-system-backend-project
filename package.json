@@ -5,7 +5,8 @@
   "main": "src/app.js",
   "type": "commonjs",
   "scripts": {
-    "build": "npm run build --prefix frontend",
+    "postinstall": "npm --prefix frontend install",
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
     "seed:admin": "node src/config/seedAdmin.js",
