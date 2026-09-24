@@ -9,15 +9,21 @@ try {
 }
 
 const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
 
   try {
     const connStr = process.env.MONGODB_URI || 'mongodb://localhost:27017/salon_management';
-    await mongoose.connect(connStr);
+    await mongoose.connect(connStr, {
+      serverSelectionTimeoutMS: 8000,
+    });
     console.log(`---mongodb connection successfully---: ${mongoose.connection.host}`);
-
   } catch (error) {
     console.error(`Database Connection Error: ${error.message}`);
-    process.exit(1);
+    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+      process.exit(1);
+    }
   }
 };
 

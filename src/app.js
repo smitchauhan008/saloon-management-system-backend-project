@@ -22,6 +22,16 @@ app.use((req, res, next) => {
 // Initialize MongoDB Connection
 connectDB();
 
+// Ensure database connection is ready before processing API requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('Database connection middleware error:', err.message);
+  }
+  next();
+});
+
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
