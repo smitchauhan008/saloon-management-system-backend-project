@@ -22,11 +22,23 @@ import {
   TrendingUp,
   FileText,
   Activity,
-  ExternalLink
+  ExternalLink,
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 import { api } from './api';
 import './App.css';
+
+const DOCS_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/docs` 
+  : (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3000/api/docs' : '/api/docs');
+
+const OPENAPI_JSON_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/docs/openapi.json` 
+  : (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3000/api/docs/openapi.json' : '/api/docs/openapi.json');
 
 function App() {
   // Global States
@@ -41,6 +53,33 @@ function App() {
   });
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [alert, setAlert] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Handle mobile drawer body scroll lock & escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  const handleNavClick = (tabKey, action) => {
+    setCurrentTab(tabKey);
+    setMobileMenuOpen(false);
+    if (action) action();
+  };
 
   // Form States for Login & Register
   const [loginEmail, setLoginEmail] = useState('');
@@ -696,6 +735,9 @@ function App() {
         
         <div className="auth-card card glass-panel">
           <div className="auth-header">
+            <div className="auth-brand-badge">
+              <Scissors size={26} />
+            </div>
             <h2 className="auth-title">Salon Management System</h2>
             <p className="auth-subtitle">Log in to salon administrative panel</p>
           </div>
@@ -726,6 +768,36 @@ function App() {
               {loading ? 'Logging In...' : 'Log In'}
             </button>
           </form>
+
+          <div className="demo-credentials-box">
+            <span className="demo-title">Quick Demo Logins (Click to Autofill):</span>
+            <div className="demo-chips">
+              <button 
+                type="button" 
+                className="demo-chip"
+                onClick={() => { setLoginEmail('admin@salon.com'); setLoginPassword('adminpassword123'); }}
+                title="Autofill Administrator credentials"
+              >
+                👑 Admin
+              </button>
+              <button 
+                type="button" 
+                className="demo-chip"
+                onClick={() => { setLoginEmail('barber1@salon.com'); setLoginPassword('password123'); }}
+                title="Autofill Barber credentials"
+              >
+                ✂️ Barber
+              </button>
+              <button 
+                type="button" 
+                className="demo-chip"
+                onClick={() => { setLoginEmail('receptionist@salon.com'); setLoginPassword('password123'); }}
+                title="Autofill Receptionist credentials"
+              >
+                📋 Receptionist
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -737,7 +809,7 @@ function App() {
   const canManageScheduling = isAdmin || isReceptionist;
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* Dynamic alerts */}
       {alert && (
         <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1100 }} className={`alert alert-${alert.type}`}>
@@ -746,102 +818,211 @@ function App() {
         </div>
       )}
 
-      {/* Sidebar Navigation */}
-      <aside className="sidebar">
-        <div className="sidebar-logo">
-          <span>Salon Management <span>System</span></span>
+      {/* Mobile Top Header (Visible on <= 900px screens) */}
+      <header className="mobile-topbar">
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setMobileMenuOpen(prev => !prev)}
+          aria-label="Toggle navigation menu"
+        >
+          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+
+        <div className="mobile-brand">
+          <div className="brand-logo-icon">
+            <Scissors size={17} />
+          </div>
+          <span className="brand-title">Salon <span>System</span></span>
         </div>
 
-        <ul className="nav-links">
-          <li className={`nav-item ${currentTab === 'dashboard' ? 'active' : ''}`} onClick={() => setCurrentTab('dashboard')}>
-            <Shield size={18} />
-            <span>Dashboard</span>
-          </li>
-          
-          <li className={`nav-item ${currentTab === 'services' ? 'active' : ''}`} onClick={() => setCurrentTab('services')}>
-            <Scissors size={18} />
-            <span>Service Catalog</span>
-          </li>
+        <div className="mobile-user-pill">
+          <span className="user-avatar-mini">{user.name?.charAt(0).toUpperCase()}</span>
+          <span className="mobile-user-role">{user.role}</span>
+        </div>
+      </header>
 
-          <li className={`nav-item ${currentTab === 'barbers' ? 'active' : ''}`} onClick={() => setCurrentTab('barbers')}>
-            <Users size={18} />
-            <span>Barbers / Staff</span>
-          </li>
+      {/* Mobile Drawer Backdrop Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="sidebar-backdrop" 
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-          {canManageScheduling && (
-            <>
-              <li className={`nav-item ${currentTab === 'customers' ? 'active' : ''}`} onClick={() => setCurrentTab('customers')}>
-                <UserPlus size={18} />
-                <span>Customers</span>
-              </li>
+      {/* Sidebar Navigation (Scrollable & Responsive) */}
+      <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+        {/* Sidebar Header */}
+        <div className="sidebar-header">
+          <div className="sidebar-logo">
+            <div className="logo-badge">
+              <Scissors size={20} />
+            </div>
+            {!sidebarCollapsed && (
+              <div className="logo-text">
+                <span className="logo-title">Salon <span>Management</span></span>
+                <span className="logo-subtitle">Enterprise Suite</span>
+              </div>
+            )}
+          </div>
 
-              <li className={`nav-item ${currentTab === 'appointments' ? 'active' : ''}`} onClick={() => setCurrentTab('appointments')}>
-                <Calendar size={18} />
-                <span>Appointments</span>
-              </li>
+          {/* Desktop/Laptop Collapse Toggle */}
+          <button 
+            className="sidebar-collapse-btn desktop-only"
+            onClick={() => setSidebarCollapsed(prev => !prev)}
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
 
-              <li className={`nav-item ${currentTab === 'slots' ? 'active' : ''}`} onClick={() => { setCurrentTab('slots'); loadDailyGrid(); }}>
-                <Clock size={18} />
-                <span>Time Slots & Grid</span>
-              </li>
-            </>
-          )}
+          {/* Mobile Close Button */}
+          <button 
+            className="sidebar-close-btn mobile-only"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close navigation"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-          {(isAdmin || user?.role === 'Barber') && (
-            <li className={`nav-item ${currentTab === 'attendance' ? 'active' : ''}`} onClick={() => { setCurrentTab('attendance'); fetchAttendance(); }}>
-              <UserCheck size={18} />
-              <span>{user?.role === 'Barber' ? 'My Attendance' : 'Staff Attendance'}</span>
+        {/* Scrollable Navigation Body */}
+        <div className="sidebar-scrollable">
+          <ul className="nav-links">
+            <li 
+              className={`nav-item ${currentTab === 'dashboard' ? 'active' : ''}`} 
+              onClick={() => handleNavClick('dashboard')}
+              title={sidebarCollapsed ? "Dashboard" : undefined}
+            >
+              <div className="nav-icon-wrap"><Shield size={18} /></div>
+              <span>Dashboard</span>
             </li>
-          )}
-
-          {(isAdmin || user?.role === 'Barber') && (
-            <li className={`nav-item ${currentTab === 'wages' ? 'active' : ''}`} onClick={() => { setCurrentTab('wages'); fetchWagesData(); handleCalculatePayroll(selectedWageBarber, selectedWageMonth); }}>
-              <CreditCard size={18} />
-              <span>{user?.role === 'Barber' ? 'My Wages & Earnings' : 'Wages & Payroll'}</span>
+            
+            <li 
+              className={`nav-item ${currentTab === 'services' ? 'active' : ''}`} 
+              onClick={() => handleNavClick('services')}
+              title={sidebarCollapsed ? "Service Catalog" : undefined}
+            >
+              <div className="nav-icon-wrap"><Scissors size={18} /></div>
+              <span>Service Catalog</span>
             </li>
-          )}
 
-          {isAdmin && (
-            <li className={`nav-item ${currentTab === 'reports' ? 'active' : ''}`} onClick={() => { setCurrentTab('reports'); fetchReportsData(); }}>
-              <TrendingUp size={18} />
-              <span>Analytics & Reports</span>
+            <li 
+              className={`nav-item ${currentTab === 'barbers' ? 'active' : ''}`} 
+              onClick={() => handleNavClick('barbers')}
+              title={sidebarCollapsed ? "Barbers / Staff" : undefined}
+            >
+              <div className="nav-icon-wrap"><Users size={18} /></div>
+              <span>Barbers / Staff</span>
             </li>
-          )}
 
-          <li className={`nav-item ${currentTab === 'schema' ? 'active' : ''}`} onClick={() => setCurrentTab('schema')}>
-            <Database size={18} />
-            <span>Database Schema</span>
-          </li>
+            {canManageScheduling && (
+              <>
+                <li 
+                  className={`nav-item ${currentTab === 'customers' ? 'active' : ''}`} 
+                  onClick={() => handleNavClick('customers')}
+                  title={sidebarCollapsed ? "Customers" : undefined}
+                >
+                  <div className="nav-icon-wrap"><UserPlus size={18} /></div>
+                  <span>Customers</span>
+                </li>
 
-          <li className={`nav-item ${currentTab === 'roadmap' ? 'active' : ''}`} onClick={() => setCurrentTab('roadmap')}>
-            <CheckSquare size={18} />
-            <span>12-Week Roadmap</span>
-          </li>
+                <li 
+                  className={`nav-item ${currentTab === 'appointments' ? 'active' : ''}`} 
+                  onClick={() => handleNavClick('appointments')}
+                  title={sidebarCollapsed ? "Appointments" : undefined}
+                >
+                  <div className="nav-icon-wrap"><Calendar size={18} /></div>
+                  <span>Appointments</span>
+                </li>
 
-          <li className={`nav-item ${currentTab === 'docs' ? 'active' : ''}`} onClick={() => { setCurrentTab('docs'); fetchSystemHealth(); }}>
-            <FileText size={18} />
-            <span>API Docs & Health</span>
-          </li>
-        </ul>
+                <li 
+                  className={`nav-item ${currentTab === 'slots' ? 'active' : ''}`} 
+                  onClick={() => handleNavClick('slots', loadDailyGrid)}
+                  title={sidebarCollapsed ? "Time Slots & Grid" : undefined}
+                >
+                  <div className="nav-icon-wrap"><Clock size={18} /></div>
+                  <span>Time Slots & Grid</span>
+                </li>
+              </>
+            )}
 
+            {(isAdmin || user?.role === 'Barber') && (
+              <li 
+                className={`nav-item ${currentTab === 'attendance' ? 'active' : ''}`} 
+                onClick={() => handleNavClick('attendance', fetchAttendance)}
+                title={sidebarCollapsed ? (user?.role === 'Barber' ? 'My Attendance' : 'Staff Attendance') : undefined}
+              >
+                <div className="nav-icon-wrap"><UserCheck size={18} /></div>
+                <span>{user?.role === 'Barber' ? 'My Attendance' : 'Staff Attendance'}</span>
+              </li>
+            )}
+
+            {(isAdmin || user?.role === 'Barber') && (
+              <li 
+                className={`nav-item ${currentTab === 'wages' ? 'active' : ''}`} 
+                onClick={() => handleNavClick('wages', () => { fetchWagesData(); handleCalculatePayroll(selectedWageBarber, selectedWageMonth); })}
+                title={sidebarCollapsed ? (user?.role === 'Barber' ? 'My Wages & Earnings' : 'Wages & Payroll') : undefined}
+              >
+                <div className="nav-icon-wrap"><CreditCard size={18} /></div>
+                <span>{user?.role === 'Barber' ? 'My Wages & Earnings' : 'Wages & Payroll'}</span>
+              </li>
+            )}
+
+            {isAdmin && (
+              <li 
+                className={`nav-item ${currentTab === 'reports' ? 'active' : ''}`} 
+                onClick={() => handleNavClick('reports', fetchReportsData)}
+                title={sidebarCollapsed ? "Analytics & Reports" : undefined}
+              >
+                <div className="nav-icon-wrap"><TrendingUp size={18} /></div>
+                <span>Analytics & Reports</span>
+              </li>
+            )}
+
+            <li 
+              className={`nav-item ${currentTab === 'schema' ? 'active' : ''}`} 
+              onClick={() => handleNavClick('schema')}
+              title={sidebarCollapsed ? "Database Schema" : undefined}
+            >
+              <div className="nav-icon-wrap"><Database size={18} /></div>
+              <span>Database Schema</span>
+            </li>
+
+            <li 
+              className={`nav-item ${currentTab === 'roadmap' ? 'active' : ''}`} 
+              onClick={() => handleNavClick('roadmap')}
+              title={sidebarCollapsed ? "12-Week Roadmap" : undefined}
+            >
+              <div className="nav-icon-wrap"><CheckSquare size={18} /></div>
+              <span>12-Week Roadmap</span>
+            </li>
+
+            <li 
+              className={`nav-item ${currentTab === 'docs' ? 'active' : ''}`} 
+              onClick={() => handleNavClick('docs', fetchSystemHealth)}
+              title={sidebarCollapsed ? "API Docs & Health" : undefined}
+            >
+              <div className="nav-icon-wrap"><FileText size={18} /></div>
+              <span>API Docs & Health</span>
+            </li>
+          </ul>
+        </div>
+
+        {/* Sidebar Footer */}
         <div className="sidebar-footer">
-          <div style={{
-            padding: '8px 12px',
-            background: 'rgba(16, 185, 129, 0.08)',
-            border: '1px solid rgba(16, 185, 129, 0.25)',
-            borderRadius: '8px',
-            marginBottom: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            fontSize: '11px',
-            color: '#10b981'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
+          <div className="server-status-pill">
+            <span className="server-status-text">
+              <span className="status-dot-pulse"></span>
               Server: Live (v1.0)
             </span>
-            <a href="http://localhost:3000/api/docs" target="_blank" rel="noreferrer" style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '2px', textDecoration: 'none', fontWeight: 600 }}>
+            <a 
+              href={DOCS_URL} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="swagger-link"
+              title="Open Swagger API documentation"
+            >
               Swagger <ExternalLink size={11} />
             </a>
           </div>
@@ -850,16 +1031,23 @@ function App() {
             <div className="user-avatar">
               {user.name.charAt(0).toUpperCase()}
             </div>
-            <div className="user-info">
-              <span className="user-name">{user.name}</span>
-              <span className="user-role">{user.role}</span>
-            </div>
+            {!sidebarCollapsed && (
+              <div className="user-info">
+                <span className="user-name">{user.name}</span>
+                <span className="user-role">{user.role}</span>
+              </div>
+            )}
           </div>
-          <button className="btn btn-secondary" onClick={handleLogout} style={{ width: '100%' }}>
+          
+          <button 
+            className="btn btn-secondary logout-btn" 
+            onClick={handleLogout} 
+            style={{ width: '100%' }}
+            title="Logout from system"
+          >
             <LogOut size={16} />
-            <span>Logout</span>
+            {!sidebarCollapsed && <span>Logout</span>}
           </button>
-
         </div>
       </aside>
 
@@ -3235,7 +3423,7 @@ function App() {
                   {loadingHealth ? 'Checking...' : 'Refresh Health'}
                 </button>
                 <a 
-                  href="http://localhost:3000/api/docs" 
+                  href={DOCS_URL} 
                   target="_blank" 
                   rel="noreferrer" 
                   className="btn btn-primary"
@@ -3470,12 +3658,12 @@ function App() {
                     Interactive Swagger UI Documentation Playground
                   </h3>
                   <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>
-                    Live interactive API documentation mounted at <code>http://localhost:3000/api/docs</code>. Test API endpoints, execute requests, and view response schemas directly in your browser.
+                    Live interactive API documentation mounted at <code>{DOCS_URL}</code>. Test API endpoints, execute requests, and view response schemas directly in your browser.
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <a 
-                    href="http://localhost:3000/api/docs/openapi.json" 
+                    href={OPENAPI_JSON_URL} 
                     target="_blank" 
                     rel="noreferrer" 
                     className="btn btn-secondary"
@@ -3484,7 +3672,7 @@ function App() {
                     Raw OpenAPI JSON
                   </a>
                   <a 
-                    href="http://localhost:3000/api/docs" 
+                    href={DOCS_URL} 
                     target="_blank" 
                     rel="noreferrer" 
                     className="btn btn-primary"
