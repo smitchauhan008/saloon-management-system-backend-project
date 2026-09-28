@@ -705,7 +705,7 @@ function App() {
     return (
       <div className="auth-container">
         {alert && (
-          <div style={{ position: 'fixed', top: '20px', zIndex: 1100 }} className={`alert alert-${alert.type}`}>
+          <div className={`alert-toast alert alert-${alert.type}`}>
             {alert.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
             {alert.message}
           </div>
@@ -790,7 +790,7 @@ function App() {
     <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {/* Dynamic alerts */}
       {alert && (
-        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1100 }} className={`alert alert-${alert.type}`}>
+        <div className={`alert-toast alert alert-${alert.type}`}>
           {alert.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
           {alert.message}
         </div>
@@ -1015,7 +1015,7 @@ function App() {
                 <h1 className="page-title">Management Dashboard</h1>
                 <p style={{ color: 'var(--text-muted)' }}>Realtime overview of salon stats</p>
               </div>
-              <div style={{ color: 'var(--primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ color: 'var(--primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <Clock size={16} /> {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
               </div>
             </div>
@@ -1062,7 +1062,7 @@ function App() {
               <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '15px', textAlign: 'left' }}>
                 <h3 style={{ color: '#fff', fontSize: '1.2rem' }}>Quick Actions</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Choose quick shortcuts to speed up saloon workflow management.</p>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '10px' }}>
+                <div className="quick-actions-btns">
                   {isAdmin && (
                     <>
                       <button className="btn btn-primary" onClick={() => openCreateModal('service')}>
@@ -1287,13 +1287,13 @@ function App() {
             </div>
 
             {/* Multi-Criteria Filters Bar */}
-            <div className="card glass-panel" style={{ padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="card glass-panel filters-bar" style={{ marginBottom: '20px' }}>
+              <div className="filter-field">
                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Date:</label>
                 <input 
                   type="date" 
                   className="form-control" 
-                  style={{ width: 'auto', padding: '6px 10px' }}
+                  style={{ padding: '6px 10px' }}
                   value={appointmentDateFilter}
                   onChange={(e) => {
                     const newDate = e.target.value;
@@ -1302,11 +1302,11 @@ function App() {
                   }}
                 />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="filter-field">
                 <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Status:</label>
                 <select 
                   className="form-control" 
-                  style={{ width: 'auto', padding: '6px 10px' }}
+                  style={{ padding: '6px 10px' }}
                   value={appointmentStatusFilter}
                   onChange={(e) => {
                     const newStatus = e.target.value;
@@ -1325,7 +1325,7 @@ function App() {
               {(appointmentDateFilter || appointmentStatusFilter) && (
                 <button 
                   className="btn btn-secondary" 
-                  style={{ padding: '6px 12px', fontSize: '0.82rem' }}
+                  style={{ padding: '6px 14px', fontSize: '0.85rem' }}
                   onClick={() => {
                     setAppointmentDateFilter('');
                     setAppointmentStatusFilter('');
@@ -1491,13 +1491,13 @@ function App() {
 
             <div className="grid-2">
               {/* Card 1: Slot Engine Explorer */}
-              <div className="card glass-panel" style={{ padding: '24px' }}>
+              <div className="card glass-panel responsive-panel">
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Clock size={20} style={{ color: 'var(--primary)' }} />
                   <span>Real-Time Barber Slot Explorer</span>
                 </h3>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div className="form-row-2" style={{ marginBottom: '16px' }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Select Date</label>
                     <input 
@@ -1555,7 +1555,7 @@ function App() {
                       </div>
                     ) : (
                       <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.85rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '0.85rem', flexWrap: 'wrap', gap: '8px' }}>
                           <span style={{ color: 'var(--text-muted)' }}>
                             Operating Shift: <strong style={{ color: '#fff' }}>{gridData.shift_hours?.start} - {gridData.shift_hours?.end}</strong>
                           </span>
@@ -1592,8 +1592,8 @@ function App() {
                           ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                               {gridData.booked_slots?.map(b => (
-                                <div key={b.appointment_id} style={{ display: 'flex', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '8px 12px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
-                                  <div>
+                                <div key={b.appointment_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '8px 12px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
+                                  <div style={{ minWidth: 0 }}>
                                     <strong style={{ color: '#fff' }}>{b.start_time} - {b.end_time}</strong>
                                     <span style={{ color: 'var(--text-muted)', marginLeft: '8px' }}>({b.service_name})</span>
                                   </div>
@@ -1610,14 +1610,14 @@ function App() {
               </div>
 
               {/* Card 2: Calendar Exceptions & Holidays Manager */}
-              <div className="card glass-panel" style={{ padding: '24px' }}>
+              <div className="card glass-panel responsive-panel">
                 <h3 style={{ fontSize: '1.2rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <AlertTriangle size={20} style={{ color: 'var(--warning)' }} />
                   <span>Salon Calendar Exceptions & Holidays</span>
                 </h3>
 
                 <form onSubmit={submitException} style={{ marginBottom: '24px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: 'var(--border-radius)', border: '1px solid var(--border-color)' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                  <div className="form-row-2">
                     <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Exception Date</label>
                       <input 
@@ -1643,9 +1643,18 @@ function App() {
                   </div>
 
                   {exceptionForm.type !== 'Holiday' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div className="form-row-2">
                       <div className="form-group" style={{ marginBottom: 0 }}>
                         <label className="form-label">Start Time (HH:MM)</label>
+                        <input 
+                          type="time" 
+                          className="form-control"
+                          value={exceptionForm.start_time}
+                          onChange={e => setExceptionForm({ ...exceptionForm, start_time: e.target.value })}
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">End Time (HH:MM)</label>
                         <input 
                           type="time" 
                           className="form-control"
@@ -1753,9 +1762,8 @@ function App() {
 
             {/* Quick Punch / Digital Timecard Widget */}
             <div 
-              className="glass-panel" 
+              className="glass-panel responsive-panel" 
               style={{ 
-                padding: '24px', 
                 background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%)', 
                 border: '1px solid rgba(139, 92, 246, 0.25)' 
               }}
@@ -1777,12 +1785,12 @@ function App() {
 
               {/* Barber Punch View */}
               {user?.role === 'Barber' && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', background: 'rgba(0,0,0,0.2)', padding: '16px 20px', borderRadius: '12px' }}>
+                <div className="timecard-row" style={{ background: 'rgba(0,0,0,0.2)', padding: '16px 20px', borderRadius: '12px' }}>
                   <div>
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Your Current Status:</div>
                     {todayAttendance ? (
                       todayAttendance.check_out_time ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
                           <span className="badge badge-success" style={{ fontSize: '0.9rem', padding: '6px 12px' }}>
                             ✓ Shift Completed ({Number(todayAttendance.shift_duration_hours || 0).toFixed(2)} hrs)
                           </span>
@@ -1791,7 +1799,7 @@ function App() {
                           </span>
                         </div>
                       ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
                           <span className="badge badge-warning" style={{ fontSize: '0.9rem', padding: '6px 12px' }}>
                             ● Active Shift In Progress
                           </span>
@@ -1801,7 +1809,7 @@ function App() {
                         </div>
                       )
                     ) : (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
                         <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--text-muted)', fontSize: '0.9rem', padding: '6px 12px' }}>
                           Not Checked In
                         </span>
@@ -1812,7 +1820,7 @@ function App() {
                     )}
                   </div>
 
-                  <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                     {(!todayAttendance) && (
                       <button 
                         className="btn btn-success" 
@@ -1849,14 +1857,14 @@ function App() {
               {/* Administrator Punch Control View */}
               {isAdmin && (
                 <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px 20px', borderRadius: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div className="timecard-row">
+                    <div className="timecard-select-wrap">
                       <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 500 }}>Select Stylist for Timecard Action:</span>
                       <select 
                         className="form-control" 
                         value={manualAttendanceBarber} 
                         onChange={(e) => setManualAttendanceBarber(e.target.value)}
-                        style={{ width: '220px', padding: '8px 12px' }}
+                        style={{ padding: '8px 12px' }}
                       >
                         <option value="">-- Choose Stylist --</option>
                         {barbers.map(b => (
@@ -1970,26 +1978,26 @@ function App() {
             </div>
 
             {/* Attendance Filter Bar */}
-            <div className="glass-panel" style={{ padding: '16px 20px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="glass-panel filters-bar" style={{ marginBottom: '20px' }}>
+              <div className="filter-field">
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Date:</span>
                 <input 
                   type="date" 
                   className="form-control" 
                   value={attendanceDateFilter} 
                   onChange={(e) => setAttendanceDateFilter(e.target.value)} 
-                  style={{ width: '160px', padding: '6px 10px', fontSize: '0.85rem' }} 
+                  style={{ padding: '6px 10px', fontSize: '0.85rem' }} 
                 />
               </div>
 
               {isAdmin && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="filter-field">
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Stylist:</span>
                   <select 
                     className="form-control" 
                     value={attendanceBarberFilter} 
                     onChange={(e) => setAttendanceBarberFilter(e.target.value)}
-                    style={{ width: '180px', padding: '6px 10px', fontSize: '0.85rem' }}
+                    style={{ padding: '6px 10px', fontSize: '0.85rem' }}
                   >
                     <option value="">All Stylists</option>
                     {barbers.map(b => (
@@ -2023,8 +2031,8 @@ function App() {
             </div>
 
             {/* Attendance Records Table */}
-            <div className="glass-panel" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+            <div className="glass-panel responsive-panel">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '8px' }}>
                 <h3 style={{ fontSize: '1.2rem', color: '#fff', margin: 0 }}>Attendance Audit Records</h3>
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                   {attendanceRecords.length} record{attendanceRecords.length === 1 ? '' : 's'} found
@@ -2037,7 +2045,7 @@ function App() {
                   <p style={{ margin: 0 }}>No attendance records found for this period or query.</p>
                 </div>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
+                <div className="table-container">
                   <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
@@ -2191,9 +2199,8 @@ function App() {
 
             {/* Live Commission Settlement Calculator & Payout Dispatcher */}
             <div 
-              className="glass-panel" 
+              className="glass-panel responsive-panel" 
               style={{ 
-                padding: '24px', 
                 background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%)', 
                 border: '1px solid rgba(139, 92, 246, 0.25)' 
               }}
@@ -2210,8 +2217,8 @@ function App() {
                 </div>
 
                 {/* Calculation Controls */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="filters-bar" style={{ padding: 0 }}>
+                  <div className="filter-field">
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Month:</span>
                     <input 
                       type="month" 
@@ -2221,18 +2228,18 @@ function App() {
                         setSelectedWageMonth(e.target.value);
                         fetchWagesData(e.target.value);
                       }}
-                      style={{ width: '150px', padding: '6px 10px', fontSize: '0.85rem' }} 
+                      style={{ padding: '6px 10px', fontSize: '0.85rem' }} 
                     />
                   </div>
 
                   {isAdmin && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div className="filter-field">
                       <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Stylist:</span>
                       <select 
                         className="form-control" 
                         value={selectedWageBarber} 
                         onChange={(e) => setSelectedWageBarber(e.target.value)}
-                        style={{ width: '180px', padding: '6px 10px', fontSize: '0.85rem' }}
+                        style={{ padding: '6px 10px', fontSize: '0.85rem' }}
                       >
                         <option value="">All Stylists</option>
                         {barbers.map(b => (
@@ -2297,7 +2304,7 @@ function App() {
                       </div>
 
                       {/* Performance Figures Cards */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+                      <div className="wages-stats-grid">
                         <div style={{ background: 'rgba(255,255,255,0.03)', padding: '10px 14px', borderRadius: '8px' }}>
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Completed Bookings</div>
                           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff' }}>{stmt.completed_appointments_count}</div>
@@ -2327,17 +2334,17 @@ function App() {
 
                       {/* Admin Payout Finalizer Box */}
                       {isAdmin && (
-                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '14px 18px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 500 }}>Base Salary (₹):</span>
+                        <div className="payout-box">
+                          <div className="payout-row">
+                            <div className="payout-input-group">
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 500, flexShrink: 0 }}>Base Salary (₹):</span>
                                 <input 
                                   type="number" 
                                   className="form-control" 
                                   value={baseSalaryInput} 
                                   onChange={(e) => setBaseSalaryInput(parseFloat(e.target.value) || 0)} 
-                                  style={{ width: '130px', padding: '6px 10px', fontSize: '0.85rem' }} 
+                                  style={{ minWidth: 0, width: '130px', maxWidth: '100%', padding: '6px 10px', fontSize: '0.85rem' }} 
                                 />
                               </div>
 
@@ -2370,8 +2377,8 @@ function App() {
                             No completed appointments found for {stmt.stylist_name} during {selectedWageMonth}.
                           </div>
                         ) : (
-                          <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                          <div className="table-container">
+                            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', minWidth: '550px' }}>
                               <thead>
                                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', textAlign: 'left', color: 'var(--text-muted)' }}>
                                   <th style={{ padding: '8px 10px' }}>Service</th>
@@ -2416,8 +2423,8 @@ function App() {
             </div>
 
             {/* Historical Finalized Wage Records Ledger */}
-            <div className="glass-panel" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+            <div className="glass-panel responsive-panel">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
                   <h3 style={{ fontSize: '1.2rem', color: '#fff', margin: 0 }}>
                     Finalized Monthly Wage Records (Balance Ledger)
@@ -2437,7 +2444,7 @@ function App() {
                   <p style={{ margin: 0 }}>No finalized wage records found for this period.</p>
                 </div>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
+                <div className="table-container">
                   <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
@@ -2508,9 +2515,9 @@ function App() {
               </div>
 
               {/* Controls */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Date:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', width: '100%', maxWidth: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: '1 1 140px' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Date:</span>
                   <input 
                     type="date" 
                     className="form-control" 
@@ -2519,12 +2526,12 @@ function App() {
                       setReportDate(e.target.value);
                       fetchReportsData(e.target.value, reportYear);
                     }}
-                    style={{ width: '150px', padding: '6px 10px', fontSize: '0.85rem' }} 
+                    style={{ minWidth: '0', width: '100%', padding: '6px 10px', fontSize: '0.85rem' }} 
                   />
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Year:</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: '1 1 100px' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Year:</span>
                   <input 
                     type="number" 
                     className="form-control" 
@@ -2533,7 +2540,7 @@ function App() {
                       setReportYear(e.target.value);
                       fetchReportsData(reportDate, e.target.value);
                     }}
-                    style={{ width: '100px', padding: '6px 10px', fontSize: '0.85rem' }} 
+                    style={{ minWidth: '0', width: '100%', padding: '6px 10px', fontSize: '0.85rem' }} 
                   />
                 </div>
 
@@ -2541,7 +2548,7 @@ function App() {
                   className="btn btn-primary" 
                   disabled={loadingReports}
                   onClick={() => fetchReportsData(reportDate, reportYear)} 
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 18px', fontSize: '0.85rem' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px 18px', fontSize: '0.85rem', whiteSpace: 'nowrap', flex: '1 1 auto' }}
                 >
                   <TrendingUp size={16} />
                   <span>{loadingReports ? 'Refreshing...' : 'Refresh Pipelines'}</span>
@@ -2607,8 +2614,8 @@ function App() {
             {/* Section 1: Daily Revenue Breakdown & 12-Month Fiscal Trend */}
             <div className="grid-2">
               {/* Daily Revenue & Hourly Distribution */}
-              <div className="glass-panel" style={{ padding: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div className="glass-panel responsive-panel">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#fff' }}>Daily Operational Income</h3>
                     <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -2621,7 +2628,7 @@ function App() {
                 </div>
 
                 {/* Day status counters */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '18px' }}>
+                <div className="reports-counter-grid" style={{ marginBottom: '18px' }}>
                   <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.2)', textAlign: 'center' }}>
                     <div style={{ fontSize: '0.75rem', color: '#10b981' }}>Completed</div>
                     <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#fff' }}>{dailyReportData?.metrics?.completed_appointments || 0}</div>
@@ -2656,7 +2663,7 @@ function App() {
                                   width: `${barWidth}%`, 
                                   height: '100%', 
                                   background: 'linear-gradient(90deg, #10b981 0%, #38bdf8 100%)', 
-                                  borderRadius: '4px',
+                                  borderRadius: '4px', 
                                   transition: 'width 0.3s ease'
                                 }} 
                               />
@@ -2673,8 +2680,8 @@ function App() {
               </div>
 
               {/* Monthly Fiscal Distribution */}
-              <div className="glass-panel" style={{ padding: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div className="glass-panel responsive-panel">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#fff' }}>Fiscal {reportYear} Monthly Trend</h3>
                     <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -2720,8 +2727,8 @@ function App() {
             {/* Section 2: Top-Selling Services Leaderboard & Stylist Performance Matrix */}
             <div className="grid-2">
               {/* Top Menu Services Leaderboard */}
-              <div className="glass-panel" style={{ padding: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <div className="glass-panel responsive-panel">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#fff' }}>Top-Selling Services Leaderboard</h3>
                     <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -2745,7 +2752,7 @@ function App() {
                           border: '1px solid rgba(255,255,255,0.05)' 
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.9rem' }}>#{svc.rank}</span>
                             <span style={{ fontWeight: 600, color: '#fff' }}>{svc.service_name}</span>
@@ -2769,7 +2776,7 @@ function App() {
                           />
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.75rem', color: 'var(--text-muted)', flexWrap: 'wrap', gap: '4px' }}>
                           <span>Price: ₹{svc.unit_price}</span>
                           <span>Total Bookings: <strong>{svc.total_bookings}</strong></span>
                         </div>
@@ -2780,8 +2787,8 @@ function App() {
               </div>
 
               {/* Stylist Performance & Productivity Matrix */}
-              <div className="glass-panel" style={{ padding: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <div className="glass-panel responsive-panel">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#fff' }}>Stylist Performance & Productivity</h3>
                     <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -2791,8 +2798,8 @@ function App() {
                   <span className="badge badge-info">{barberPerformanceData?.total_staff_count || 0} Stylists</span>
                 </div>
 
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                <div className="table-container">
+                  <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', minWidth: '550px' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-muted)' }}>
                         <th style={{ padding: '8px 10px' }}>Stylist</th>
@@ -2834,7 +2841,7 @@ function App() {
             </div>
 
             {/* Section 3: Customer Retention & VIP Client Loyalty Analytics */}
-            <div className="glass-panel" style={{ padding: '24px' }}>
+            <div className="glass-panel responsive-panel">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff' }}>
@@ -2845,7 +2852,7 @@ function App() {
                   </p>
                 </div>
 
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Avg Client Spend</div>
                     <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#10b981' }}>
@@ -2863,8 +2870,8 @@ function App() {
               </div>
 
               {/* VIP Clients Table */}
-              <div style={{ overflowX: 'auto' }}>
-                <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div className="table-container">
+                <table className="table" style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
                       <th style={{ padding: '12px 14px' }}>Client Name</th>
